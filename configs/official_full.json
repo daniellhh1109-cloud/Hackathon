@@ -1,7 +1,7 @@
 {
   "chars": "data/raw/chars_final_with_names.parquet",
   "factor_list": "data/raw/factor_char_list.csv",
-  "output_dir": "outputs/member_d_official_full",
+  "output_dir": "outputs/official_full",
   "test_years": [2021, 2022, 2023, 2024, 2025, 2026],
   "require_full_period": true,
   "universe": "all_available",
