@@ -1,0 +1,4 @@
+# Development/configuration tools only; model dependencies are not selected yet.
+pytest>=8
+PyYAML>=6
+# Add and pin data, PyTorch, text-encoder and CVXPY dependencies when implementing each module.

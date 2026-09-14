@@ -1,0 +1,39 @@
+# Guide defaults for the planned multimodal pipeline.
+# The existing root MAIN.py does NOT load this file yet.
+data:
+  quant_window: 12
+  text_memory_months: 6
+  target: ret_exc_lead1m
+  factor_list: data/raw/factor_char_list.csv
+text_encoder:
+  model: nreimers/MiniLM-L6-H384-uncased
+  frozen: true
+  chunk_tokens: 224
+  overlap_tokens: 32
+  embedding_dim: 384
+model:
+  d_model: 128
+  modern_tcn_blocks: 3
+  kernel_size: 7
+  dropout: 0.1
+  text_attention_dim: 128
+  head_hidden: 64
+training:
+  loss: huber
+  optimizer: adamw
+  lr: 0.001
+  weight_decay: 0.0001
+  batch_size: 512
+  max_epochs: 50
+  early_stopping_patience: 5
+portfolio:
+  n_long: 150
+  n_short: 150
+  gross_limit: 2.0
+  official_net_min: -0.5
+  official_net_max: 0.5
+  net_target_tol: 0.05
+  beta_tol: 0.10
+  max_position: 0.02
+  lambda_turnover: 0.01
+  lambda_l2: 0.001
