@@ -1,8 +1,3 @@
-"""Member C: calendar alignment and guards; standard-library record API.
-
-Records are mappings (DataFrames: use to_dict('records')). Prediction membership
-never depends on label availability. Learned preprocessing must call the fit guard.
-"""
 from dataclasses import dataclass
 from datetime import date
 from src.utils.dates import (as_date, month_start, month_end, add_months,
