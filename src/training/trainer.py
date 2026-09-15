@@ -1,3 +1,8 @@
+"""Member A: quant-only training, validation selection and portable checkpoints.
+
+Dataset items: quant[12,147], target scalar, target_month/quant_end_month
+(YYYY-MM), permno. Dataset construction and ModernTCN belong to B/C.
+"""
 from __future__ import annotations
 
 import csv
@@ -14,6 +19,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 import yaml
+from src.data.splits import annual_split
 
 
 @dataclass(frozen=True)
@@ -72,13 +78,11 @@ def _month(value):
 
 
 def annual_bounds(year):
-    if type(year) is not int or not 2021 <= year <= 2026:
-        raise ValueError('target_year must be 2021..2026')
-    return {
-        'train': ['2015-01', f'{year - 3}-12'],
-        'validation': [f'{year - 2}-01', f'{year - 1}-12'],
-        'test': [f'{year}-01', f'{year}-08' if year == 2026 else f'{year}-12'],
-    }
+    """Use the same target-month boundaries as data construction and inference."""
+    split = annual_split(year)
+    return {part: [getattr(split, f'{part}_{edge}').strftime('%Y-%m')
+                   for edge in ('start', 'end')]
+            for part in ('train', 'validation', 'test')}
 
 
 def _json_write(path, value):
@@ -132,7 +136,7 @@ def _vector(value, batch_size, name):
     return value
 
 
-def _run_epoch(model, loader, criterion, device, optimizer=None):
+def _run_epoch(model, loader, criterion, device, optimizer=None, batch_forward=None):
     training = optimizer is not None
     model.train(training)
     total, count = 0.0, 0
@@ -146,7 +150,7 @@ def _run_epoch(model, loader, criterion, device, optimizer=None):
             target = _vector(target, size, 'target')
             if training:
                 optimizer.zero_grad(set_to_none=True)
-            prediction = _vector(model(quant), size, 'prediction')
+            prediction = _vector(model(quant) if batch_forward is None else batch_forward(model, batch, device), size, 'prediction')
             loss = criterion(prediction, target)
             if not torch.isfinite(loss):
                 raise ValueError('non-finite loss')
@@ -168,7 +172,8 @@ def _run_epoch(model, loader, criterion, device, optimizer=None):
 def fit(model_factory: Callable[[], nn.Module], train_dataset: Dataset,
         validation_dataset: Dataset, *, config: TrainingConfig, target_year: int,
         output_dir, feature_names: list[str], model_metadata: dict,
-        preprocessing_metadata: dict):
+        preprocessing_metadata: dict, collate_fn=None, batch_forward=None,
+        extra_metadata: dict | None = None):
     """No test dataset accepted. Fresh output directory required; no resume implied.
 
     model_factory must return a NEW model (seed is set before calling it).
@@ -185,6 +190,7 @@ def fit(model_factory: Callable[[], nn.Module], train_dataset: Dataset,
     # Validate serializability before creating any artifacts.
     model_metadata = json.loads(json.dumps(model_metadata, allow_nan=False))
     preprocessing_metadata = json.loads(json.dumps(preprocessing_metadata, allow_nan=False))
+    extra_metadata = json.loads(json.dumps(extra_metadata or {}, allow_nan=False))
     bounds = annual_bounds(target_year)
     audit = {role: _audit_dataset(dataset, role, bounds[role]) for role, dataset in
              [('train', train_dataset), ('validation', validation_dataset)]}
@@ -200,13 +206,16 @@ def fit(model_factory: Callable[[], nn.Module], train_dataset: Dataset,
     criterion = nn.HuberLoss(delta=config.huber_delta)
     generator = torch.Generator().manual_seed(config.seed)
     train_loader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True,
-                              generator=generator, num_workers=0, drop_last=False)
+                              generator=generator, num_workers=0, drop_last=False, collate_fn=collate_fn)
     validation_loader = DataLoader(validation_dataset, batch_size=config.batch_size,
-                                   shuffle=False, num_workers=0, drop_last=False)
+                                   shuffle=False, num_workers=0, drop_last=False, collate_fn=collate_fn)
     metadata = {'format_version': 1, 'training': asdict(config), 'target_year': target_year,
                 'annual_bounds': bounds, 'data_audit': audit, 'feature_names': feature_names,
                 'model_metadata': model_metadata, 'preprocessing_metadata': preprocessing_metadata,
-                'torch_version': str(torch.__version__), 'selection_metric': 'validation_huber_loss'}
+                'torch_version': str(torch.__version__), 'selection_metric': 'validation_huber_loss',
+                'integration_metadata': extra_metadata,
+                'trainable_parameter_names': [n for n,p in model.named_parameters() if p.requires_grad],
+                'frozen_parameter_names': [n for n,p in model.named_parameters() if not p.requires_grad]}
     _json_write(output_dir / 'run.json', metadata)
     print(json.dumps({'data_audit': audit, 'first_train_batch_quant_shape': [min(config.batch_size, len(train_dataset)), 12, 147]}, ensure_ascii=False), flush=True)
     best, best_epoch, patience_best, stale = math.inf, 0, math.inf, 0
@@ -215,8 +224,9 @@ def fit(model_factory: Callable[[], nn.Module], train_dataset: Dataset,
         writer = csv.DictWriter(stream, fieldnames=['epoch', 'train_loss', 'validation_loss', 'best_epoch', 'stale_epochs'])
         writer.writeheader()
         for epoch in range(1, config.max_epochs + 1):
-            train_loss = _run_epoch(model, train_loader, criterion, device, optimizer)
-            validation_loss = _run_epoch(model, validation_loader, criterion, device)
+            epoch_kwargs = {} if batch_forward is None else {'batch_forward': batch_forward}
+            train_loss = _run_epoch(model, train_loader, criterion, device, optimizer, **epoch_kwargs)
+            validation_loss = _run_epoch(model, validation_loader, criterion, device, **epoch_kwargs)
             # Always save the true minimum; min_delta affects patience only.
             if validation_loss < best:
                 best, best_epoch = validation_loss, epoch
