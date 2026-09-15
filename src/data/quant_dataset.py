@@ -76,6 +76,35 @@ def window_manifest(panel):
                          'continuous_months': history, 'window_status': reason})
 
 
+def validate_window_index(windows, context, n_rows):
+    """Recompute calendar eligibility from source identities, not cached claims.
+
+    This verifies row alignment without opening labels or materializing windows.
+    It cannot certify that the upstream provider's factors were point-in-time.
+    """
+    if len(windows) != n_rows or len(context) != n_rows or n_rows == 0:
+        raise ValueError('window/context row-count mismatch')
+    normalized = normalize_panel(context)
+    # Never silently reorder context: quant.npy uses the original row positions.
+    original_keys = context[['permno', 'eom']].copy()
+    original_keys['eom'] = pd.to_datetime(original_keys['eom'])
+    if not np.array_equal(original_keys.permno.to_numpy(), normalized.permno.to_numpy()) or not np.array_equal(
+            original_keys.eom.to_numpy(), normalized.eom.to_numpy()):
+        raise ValueError('context rows must be sorted by security and month')
+    expected = window_manifest(normalized)
+    if not set(expected.columns) <= set(windows.columns):
+        raise ValueError('window index missing required columns')
+    # IDs and offsets must be integers, not float indices that get truncated later.
+    for column in ['row_index', 'permno', 'continuous_months']:
+        if not pd.api.types.is_integer_dtype(windows[column].dtype):
+            raise ValueError(f'window {column} must be integer')
+    try:
+        pd.testing.assert_frame_equal(windows[expected.columns].reset_index(drop=True), expected,
+                                      check_dtype=False, check_exact=True)
+    except AssertionError as exc:
+        raise ValueError('window index differs from actual calendar/identity records') from exc
+
+
 def prepare_store(raw_path, factor_path, output_dir):
     """Prepare all months/securities; refuse to overwrite, write manifest last."""
     import pyarrow.parquet as pq
@@ -147,9 +176,12 @@ class QuantDataset(Dataset):
         self.feature_names = self.metadata['feature_names']
         validate_feature_columns(self.feature_names, self.feature_names)
         self.quant = np.load(self.store_dir / 'quant.npy', mmap_mode='r', allow_pickle=False)
-        if self.quant.shape != (self.metadata['n_rows'], 147):
+        if self.quant.shape != (self.metadata['n_rows'], 147) or self.quant.dtype != np.dtype('float32'):
             raise ValueError('quant array shape mismatch')
         windows = pd.read_parquet(self.store_dir / 'windows.parquet')
+        context = pd.read_parquet(self.store_dir / 'raw_context.parquet',
+                                  columns=['permno', 'date', 'eom', 'target_month'])
+        validate_window_index(windows, context, self.metadata['n_rows'])
         split = annual_split(year)
         low, high = [getattr(split, f'{partition}_{edge}').strftime('%Y-%m') for edge in ('start','end')]
         in_period = windows.target_month.between(low, high)
@@ -197,3 +229,4 @@ class QuantDataset(Dataset):
 def make_loader(dataset, *, batch_size=512, shuffle=False, seed=42):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
                       generator=torch.Generator().manual_seed(seed), num_workers=0, drop_last=False)
+
