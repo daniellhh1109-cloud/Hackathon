@@ -50,7 +50,7 @@ def smoke_components():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', default='configs/member_a_week2.yaml')
+    parser.add_argument('--config', default='configs/trainer.yaml')
     parser.add_argument('--output-dir', required=True, help='New directory; existing runs are never overwritten')
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--smoke', action='store_true', help='Artificial data and a tiny linear model only')
