@@ -9,7 +9,7 @@ from src.data.quant_dataset import prepare_store, QuantDataset, make_loader, wri
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', default='configs/member_b_week2.yaml')
+    parser.add_argument('--config', default='configs/datasets.yaml')
     parser.add_argument('--reuse', action='store_true', help='Use existing immutable prepared store')
     args = parser.parse_args()
     config = yaml.safe_load(Path(args.config).read_text())
