@@ -8,10 +8,12 @@ from dataclasses import asdict, dataclass
 from datetime import date, datetime, time as daytime, timedelta, timezone
 import hashlib
 import json
+import logging
 from pathlib import Path
 import re
 import sqlite3
 import time
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import pyarrow as pa
@@ -22,6 +24,8 @@ import yaml
 
 VERSION = 'filing_embeddings_v1'
 COLUMNS = ['document_id', 'permno', 'filing_date', 'text']
+LOGGER = logging.getLogger(__name__)
+EXPORT_FILES = ('filing_embeddings.parquet', 'coverage_report.json', 'manifest.json', 'text_metadata.json')
 
 
 def sha256_file(path):
@@ -238,8 +242,10 @@ def encode_pending(db, source, encoder, *, max_documents=None, retry_failed=Fals
                 try:
                     embedding,tokens,chunks=encoder.encode(text)
                     embedding=np.asarray(embedding,dtype='<f4')
-                    if embedding.shape != (384,) or not np.isfinite(embedding).all():
-                        raise ValueError('embedding must be finite [384]')
+                    if embedding.shape != (384,):
+                        raise ValueError('embedding shape must be [384]')
+                    if not np.isfinite(embedding).all():
+                        raise ValueError('embedding must contain only finite values')
                     if tokens<1 or chunks<1: raise ValueError('empty token/chunk count')
                 except (ValueError, RuntimeError) as exc:
                     # Persist explicit failure, never substitute a zero vector or no-event flag.
@@ -273,6 +279,25 @@ EXPORT_SCHEMA=pa.schema([
 
 
 def export_cache(db, output, identity, stats):
+    """Stage all files before publication; caller must hold cache.lock.
+
+    Publication spans multiple renames, not a filesystem transaction. A persistent
+    marker makes interrupted publication fail closed until the next successful
+    export regenerates the complete snapshot from the SQLite source of truth.
+    """
+    output = Path(output)
+    with TemporaryDirectory(prefix='.export-', dir=output) as directory:
+        staged = Path(directory)
+        report = _write_export(db, staged, identity, stats)
+        marker = output / 'export_in_progress.json'
+        json_write(marker, {'state': 'publishing'})
+        for name in EXPORT_FILES:
+            (staged / name).replace(output / name)
+        marker.unlink()
+        return report
+
+
+def _write_export(db, output, identity, stats):
     output=Path(output)
     query='''SELECT o.*,v.embedding,v.token_count,v.chunk_count,f.error_type,f.message
              FROM observations o LEFT JOIN vectors v USING(text_sha256)
@@ -286,6 +311,8 @@ def export_cache(db, output, identity, stats):
             rows=[]
             for idx,doc,permno,day,available,digest,status,reason,duplicate_of,blob,tokens,n_chunks,error,message in records:
                 if status=='pending':
+                    # LEFT JOIN may match neither table: this text has not been attempted.
+                    # observations stores eligibility; vectors/failures store encoding outcomes.
                     if blob is not None: status='success'
                     elif error is not None: status,reason='failed',error+': '+message
                 vector = None
@@ -371,9 +398,14 @@ def run_pipeline(source, output, config, *, model_cache_dir, max_documents=None,
                 else:stats.update(new_vectors=0,attempts=0,elapsed_seconds=0)
             return export_cache(db,output,identity,stats)
         except BaseException as exc:
-            if db.execute("SELECT 1 FROM meta WHERE key='indexed'").fetchone():
-                stats.update(interrupted=True,error_type=type(exc).__name__)
-                export_cache(db,output,identity,stats)
+            try:
+                if db.execute("SELECT 1 FROM meta WHERE key='indexed'").fetchone():
+                    stats.update(interrupted=True,error_type=type(exc).__name__)
+                    export_cache(db,output,identity,stats)
+            except BaseException as cleanup_error:
+                # Preserve even KeyboardInterrupt/SystemExit if cleanup itself fails.
+                exc.add_note(f'Cache cleanup export failed: {type(cleanup_error).__name__}: {cleanup_error}')
+                LOGGER.error('Cache cleanup export failed; preserving original error', exc_info=True)
             raise
         finally:
             db.close()
@@ -387,6 +419,8 @@ def load_verified_cache(output, *, allow_partial=False):
     """
     output=Path(output)
     with FileLock(str(output/'cache.lock'),timeout=0):
+        if (output/'export_in_progress.json').exists():
+            raise ValueError('cache export incomplete; rerun the pipeline to regenerate the snapshot')
         manifest=json.loads((output/'manifest.json').read_text())
         metadata=json.loads((output/'text_metadata.json').read_text())
         if metadata != text_provenance(manifest['identity'], sha256_file(output/'manifest.json')):
