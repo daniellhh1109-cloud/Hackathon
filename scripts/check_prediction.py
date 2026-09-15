@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from src.data.quant_dataset import QuantDataset,sha256
+from src.data.splits import annual_split
 from src.inference.predict_month import validate_predictions,canonical_month
 
 
@@ -20,15 +21,23 @@ def check_export(directory,store_dir,checkpoint,require_full_year=False):
     ds=QuantDataset(store_dir,year=manifest['year'],partition='test',supervised=False)
     if provenance['preprocessing_metadata']!=ds.metadata:
         raise ValueError('dataset metadata mismatch')
+    required_inputs = {'metadata.json','quant.npy','windows.parquet','raw_context.parquet'}
+    if set(provenance['input_artifacts_sha256']) != required_inputs:
+        raise ValueError('input artifact inventory incomplete')
     for name,digest in provenance['input_artifacts_sha256'].items():
         if name not in ['metadata.json','quant.npy','windows.parquet','raw_context.parquet'] or sha256(Path(store_dir)/name)!=digest:
             raise ValueError('input artifact hash mismatch')
     months=provenance['requested_months']
-    if len(months)!=len(set(months)) or len(months)!=manifest['months']:
+    if not months or len(months)!=len(set(months)) or len(months)!=manifest['months']:
         raise ValueError('month coverage mismatch')
-    for month in months: canonical_month(month)
+    split = annual_split(manifest['year'])
+    low, high = split.test_start.strftime('%Y-%m'), split.test_end.strftime('%Y-%m')
+    for month in months:
+        canonical_month(month)
+        if not low <= month <= high:
+            raise ValueError('month outside checkpoint annual interval')
     if require_full_year:
-        expected=[str(p) for p in pd.period_range(f"{manifest['year']}-01",f"{manifest['year']}-08" if manifest['year']==2026 else f"{manifest['year']}-12",freq='M')]
+        expected=[str(p) for p in pd.period_range(low,high,freq='M')]
         if months!=expected: raise ValueError('incomplete annual coverage')
     expected_files={f'{month}.{extension}' for month in months for extension in ['csv','parquet']}
     if set(manifest['files_sha256'])!=expected_files:
