@@ -1,0 +1,5 @@
+raw_path: /Users/daniel/Downloads/chars_final_with_names.parquet
+factor_path: /Users/daniel/Downloads/factor_char_list.csv
+store_dir: data/processed/quant_v1
+report_dir: outputs/quant
+year: 2021
