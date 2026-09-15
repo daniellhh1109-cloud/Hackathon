@@ -118,11 +118,16 @@ def fit_multimodal(*, text_metadata, **kwargs):
                                'text_coverage':coverage})
 
 
-def load_multimodal_checkpoint(path, model, *, expected_text_metadata, **kwargs):
+def load_multimodal_checkpoint(path, model, *, expected_text_metadata,
+                               expected_feature_names: list[str],
+                               expected_model_metadata: dict):
+    """Require text provenance, factor order and architecture before checkpoint I/O."""
     # Check provenance BEFORE mutating model parameters.
     expected_text_metadata = validate_provenance(expected_text_metadata)
     validate_frozen_encoder(model)
     checkpoint=torch.load(path,map_location='cpu',weights_only=True)
     if checkpoint.get('integration_metadata',{}).get('text') != expected_text_metadata:
         raise ValueError('checkpoint text/cache provenance mismatch')
-    return load_checkpoint(path,model,**kwargs)
+    return load_checkpoint(path, model,
+                           expected_feature_names=expected_feature_names,
+                           expected_model_metadata=expected_model_metadata)
