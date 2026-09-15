@@ -169,6 +169,17 @@ def _run_epoch(model, loader, criterion, device, optimizer=None, batch_forward=N
     return total / count
 
 
+def _validated_metadata(name, value):
+    """Normalize JSON metadata and identify the failing argument on invalid input."""
+    try:
+        return json.loads(json.dumps(value, allow_nan=False))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f'{name} must be JSON-serializable with finite numbers '
+            f'(no NaN/Infinity) and no circular references: {exc}'
+        ) from exc
+
+
 def fit(model_factory: Callable[[], nn.Module], train_dataset: Dataset,
         validation_dataset: Dataset, *, config: TrainingConfig, target_year: int,
         output_dir, feature_names: list[str], model_metadata: dict,
@@ -188,9 +199,9 @@ def fit(model_factory: Callable[[], nn.Module], train_dataset: Dataset,
     if not model_metadata or not preprocessing_metadata:
         raise ValueError('model and preprocessing metadata are required')
     # Validate serializability before creating any artifacts.
-    model_metadata = json.loads(json.dumps(model_metadata, allow_nan=False))
-    preprocessing_metadata = json.loads(json.dumps(preprocessing_metadata, allow_nan=False))
-    extra_metadata = json.loads(json.dumps(extra_metadata or {}, allow_nan=False))
+    model_metadata = _validated_metadata('model_metadata', model_metadata)
+    preprocessing_metadata = _validated_metadata('preprocessing_metadata', preprocessing_metadata)
+    extra_metadata = _validated_metadata('extra_metadata', extra_metadata if extra_metadata is not None else {})
     bounds = annual_bounds(target_year)
     audit = {role: _audit_dataset(dataset, role, bounds[role]) for role, dataset in
              [('train', train_dataset), ('validation', validation_dataset)]}
@@ -269,3 +280,4 @@ def load_checkpoint(path, model: nn.Module, *, expected_feature_names: list[str]
     model.load_state_dict(checkpoint['model_state_dict'], strict=True)
     model.eval()
     return checkpoint
+
