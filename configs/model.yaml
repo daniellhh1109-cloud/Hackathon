@@ -1,0 +1,12 @@
+# Short-sequence adaptation, not the full official forecasting architecture.
+model:
+  input_factors: 147
+  quant_window: 12
+  d_model: 128
+  latent_groups: 16
+  num_blocks: 3
+  kernel_size: 7
+  ffn_ratio: 2
+  dropout: 0.1
+  head_hidden: 64
+  pooling: mean
