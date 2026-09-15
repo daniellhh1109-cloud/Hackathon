@@ -1,0 +1,6 @@
+year: 2021
+dataset_config: configs/datasets.yaml
+checkpoint: outputs/member_d_week2/quant_training/best.pt
+output_dir: outputs/member_e_week2/predictions_2021
+batch_size: 512
+cpu_threads: 2
