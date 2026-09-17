@@ -1,0 +1,14 @@
+# Model architecture; training settings remain in multimodal_training.yaml.
+model:
+  gate_mode: scalar
+  quant:
+    input_factors: 147
+    quant_window: 12
+    d_model: 128
+    latent_groups: 16
+    num_blocks: 3
+    kernel_size: 7
+    ffn_ratio: 2
+    dropout: 0.1
+    head_hidden: 64
+    pooling: mean
