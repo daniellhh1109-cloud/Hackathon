@@ -1,0 +1,35 @@
+# Member A production interface template. B supplies vetted snapshots; C/D supply adapters.
+# Run from repository root. This fails explicitly until those inputs/adapters exist.
+start_month: '2021-01-01'
+end_month: '2021-01-01'
+initial_portfolio: true
+controller:
+  kind: mock  # Offline workflow, NOT an LLM. Set openai and an explicit model to use the API.
+  # model: YOUR_AVAILABLE_MODEL
+  # timeout: 45
+  # max_output_tokens: 1200
+optimizer: src.portfolio.optimizer:optimize_weights
+evaluator: null  # Set module:function for D's post-commit evaluation; never exposed to the LLM.
+policy:
+  max_optimizer_retries: 3
+  max_tool_calls: 24
+  net_target_tol: 0.05
+  lambda_turnover: 0.01
+  lambda_l2: 0.001
+  plans:
+    - {name: default, n_long: 150, n_short: 150, min_dollar_volume: 0, max_abs_beta: 5}
+    - {name: expanded, n_long: 200, n_short: 200, min_dollar_volume: 0, max_abs_beta: 5}
+    - {name: lower_beta, n_long: 150, n_short: 150, min_dollar_volume: 0, max_abs_beta: 2}
+  limits:
+    min_holdings: 100
+    max_holdings: 500
+    gross_limit: 2.0
+    net_min: -0.5
+    net_max: 0.5
+    max_position: 0.02
+    beta_tolerance: 0.10
+snapshots:
+  '2021-01-01':
+    predictions: data/processed/portfolio/2021-01/predictions.parquet
+    context: data/processed/portfolio/2021-01/context.parquet
+    previous: data/processed/portfolio/2021-01/previous.json
