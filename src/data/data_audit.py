@@ -75,4 +75,4 @@ def run(a):
     print(json.dumps(summary,ensure_ascii=False,indent=2,default=lambda v:int(v)))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(); p.add_argument('--chars',required=True); p.add_argument('--filings',required=True); p.add_argument('--factors',default='docs/week1/sources/factor_char_list.csv'); p.add_argument('--output',default='outputs/week1'); p.add_argument('--existing-outputs'); run(p.parse_args())
+    p=argparse.ArgumentParser(); p.add_argument('--chars',required=True); p.add_argument('--filings',required=True); p.add_argument('--factors',default='configs/factor_char_list.csv'); p.add_argument('--output',default='outputs/week1'); p.add_argument('--existing-outputs'); run(p.parse_args())

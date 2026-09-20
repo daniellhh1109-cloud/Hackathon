@@ -1,0 +1,20 @@
+{
+  "chars": "data/raw/chars_final_with_names.parquet",
+  "factor_list": "configs/factor_char_list.csv",
+  "output_dir": "outputs/member_d_smoke",
+  "test_years": [
+    2021
+  ],
+  "n_securities": 128,
+  "selection_month": "2015-01-31",
+  "alphas": [
+    0.1,
+    1,
+    10,
+    100,
+    1000
+  ],
+  "preprocessing": "full_same_month_median_then_average_rank_minus1_plus1",
+  "model": "Ridge_train_only_svd_with_intercept",
+  "baseline_status": "independent_2026_adaptation_official_teaching_script_not_available"
+}

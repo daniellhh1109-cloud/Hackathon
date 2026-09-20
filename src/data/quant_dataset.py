@@ -209,9 +209,20 @@ class QuantDataset(Dataset):
     def __len__(self):
         return len(self.rows)
 
-    def __getitem__(self, index):
+    def _window_bounds(self, index):
+        """Reject invalid offsets before NumPy/pandas can silently clip slices."""
         row = int(self.rows[index])
-        result = {'quant': torch.from_numpy(self.quant[row-11:row+1].copy()),
+        if row < 11 or row >= len(self.quant):
+            raise ValueError(
+                f'invalid 12-month window end row {row}: '
+                f'expected 11 <= row < {len(self.quant)}'
+            )
+        return row - 11, row + 1
+
+    def __getitem__(self, index):
+        start, stop = self._window_bounds(index)
+        row = stop - 1
+        result = {'quant': torch.from_numpy(self.quant[start:stop].copy()),
                   'permno': int(self.permnos[index]), 'target_month': self.targets[index],
                   'quant_end_month': self.ends[index]}
         if self.labels is not None:
@@ -219,8 +230,8 @@ class QuantDataset(Dataset):
         return result
 
     def timeline(self, index):
-        row = int(self.rows[index])
-        context = pd.read_parquet(self.store_dir / 'raw_context.parquet').iloc[row-11:row+1]
+        start, stop = self._window_bounds(index)
+        context = pd.read_parquet(self.store_dir / 'raw_context.parquet').iloc[start:stop]
         result = context.copy()
         result['sample_target_month'] = self.targets[index]
         return result
@@ -229,4 +240,3 @@ class QuantDataset(Dataset):
 def make_loader(dataset, *, batch_size=512, shuffle=False, seed=42):
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
                       generator=torch.Generator().manual_seed(seed), num_workers=0, drop_last=False)
-

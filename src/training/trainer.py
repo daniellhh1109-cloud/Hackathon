@@ -280,4 +280,3 @@ def load_checkpoint(path, model: nn.Module, *, expected_feature_names: list[str]
     model.load_state_dict(checkpoint['model_state_dict'], strict=True)
     model.eval()
     return checkpoint
-

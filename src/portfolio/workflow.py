@@ -73,7 +73,7 @@ def run_backtest(config,output_dir):
                 if abs(r['weight'])<=policy.limits.position_epsilon:continue
                 names=labels[r['permno']]
                 holding_rows.append({'Date':date,'PERMNO':r['permno'],'TICKER':names['TICKER'],
-                    'COMPANY NAME':names['COMPANY NAME'],'WEIGHT':r['weight']})
+                    'COMPANY NAME':names['COMPANY NAME'],'WEIGHT':100*r['weight']})
             write_json(directory/'evaluation.json',row)
             write_json(directory/'drifted_weights.json',previous)
             completed.append(month)
@@ -96,6 +96,7 @@ def run_backtest(config,output_dir):
         incomplete_names=any(not r['TICKER'] or not r['COMPANY NAME'] for r in holding_rows)
         result={'status':'completed','synthetic':config.get('synthetic',False),'months':completed,'full_oos':len(months)==68,
                 'names_complete':not incomplete_names,'controller_kind':config.get('controller',{}).get('kind','mock'),
+                'holdings_weight_unit':'percent_of_NAV',
                 'submission_ready':False,'remaining_manual_checks':['CVs','deck review','official submission requirements','borrow feasibility'],
                 'costs':config.get('costs',{}),'cash_assumption':'1-net earns/pays TB3MS/1200; fully remunerated short proceeds',
                 'missing_return_policy':'error; no label-based reselection or zero fill'}

@@ -1,0 +1,9 @@
+# Tested text-encoding dependencies; use the existing project virtual environment.
+torch>=2.6,<3
+transformers==4.57.6
+huggingface-hub==0.36.2
+pyarrow>=18
+numpy>=1.26
+PyYAML>=6
+filelock>=3
+pytest>=8

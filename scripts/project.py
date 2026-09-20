@@ -65,7 +65,7 @@ def audit(config):
     factors=load_factors(config['factor_path']);result={}
     for name,path in [('quant',config['raw_path']),('text',config['text_path'])]:
         f=pq.ParquetFile(path);result[name]={'path':path,'rows':f.metadata.num_rows,'columns':len(f.schema_arrow.names)}
-        required=factors+['permno','eom','ret_exc_lead1m'] if name=='quant' else ['document_id','permno','filing_date','text']
+        required=factors+['permno','date','eom','ret_exc_lead1m'] if name=='quant' else ['document_id','permno','filing_date','text']
         missing=set(required)-set(f.schema_arrow.names)
         if missing:raise ValueError(f'{name} missing columns: {sorted(missing)}')
     result['factor_count']=len(factors)
@@ -73,9 +73,14 @@ def audit(config):
 
 
 def prepare(config):
-    from src.data.quant_dataset import prepare_store,QuantDataset
+    from src.data.quant_dataset import prepare_store,QuantDataset,sha256
+    from src.data.prepare_quant import load_factors
     if Path(config['store_dir']).exists():
         ds=QuantDataset(config['store_dir'],year=2021,partition='test',supervised=False)
+        if ds.metadata['source']['sha256'] != sha256(config['raw_path']):
+            raise ValueError('cached quant source differs from raw_path; choose a new store_dir')
+        if ds.feature_names != load_factors(config['factor_path']):
+            raise ValueError('cached factor order differs from factor_path; choose a new store_dir')
         return {'reused_verified_store':True,'test_samples':len(ds)}
     prepare_store(config['raw_path'],config['factor_path'],config['store_dir'])
     return {'prepared':config['store_dir']}

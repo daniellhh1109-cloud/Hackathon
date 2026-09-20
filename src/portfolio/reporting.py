@@ -11,9 +11,12 @@ def build_report(run_dir):
     import matplotlib.pyplot as plt
     root=Path(run_dir);status=json.loads((root/'run_result.json').read_text())
     if status['status']!='completed':raise ValueError('report requires a completed backtest')
-    output=root/'report';output.mkdir(exist_ok=False)
+    output=root/'report'
     t=pd.read_csv(root/'timeline.csv');metrics=json.loads((root/'metrics.json').read_text())
     holdings=pd.read_csv(root/'monthly_holdings.csv')
+    if status.get('holdings_weight_unit') != 'percent_of_NAV':
+        raise ValueError('Holdings unit is not certified as percent_of_NAV; rerun with the corrected exporter')
+    output.mkdir(exist_ok=False)
     x=pd.to_datetime(t.Date)
     for filename,columns,title in [
         ('cumulative.png',['nav','benchmark_nav','market_nav'],'Cumulative NAV (net of declared costs)'),

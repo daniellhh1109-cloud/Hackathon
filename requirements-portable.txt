@@ -1,0 +1,18 @@
+# Install the chosen CPU/CUDA torch wheel FIRST. This file does not replace it.
+numpy>=1.26,<3
+pandas>=2.2,<4
+pyarrow>=18,<26
+scipy>=1.13,<2
+scikit-learn>=1.5,<2
+PyYAML>=6,<7
+matplotlib>=3.8,<4
+threadpoolctl>=3,<4
+transformers==4.57.6
+huggingface-hub==0.36.2
+filelock>=3,<4
+cvxpy>=1.6,<2
+clarabel>=0.9,<1
+statsmodels>=0.14,<1
+pytest>=8,<10
+reportlab>=4,<5
+python-pptx>=1,<2

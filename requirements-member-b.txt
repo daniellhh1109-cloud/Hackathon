@@ -1,0 +1,3 @@
+-r requirements-member-a.txt
+pandas>=2.2
+pyarrow>=16

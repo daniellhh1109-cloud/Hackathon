@@ -86,7 +86,7 @@ def main():
     source=parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--smoke',action='store_true', help='Artificial fixtures using the 2021 annual split only')
     source.add_argument('--factory')
-    parser.add_argument('--config',default='configs/member_a_week3.yaml')
+    parser.add_argument('--config',default='configs/multimodal_training.yaml')
     parser.add_argument('--output-dir',required=True)
     parser.add_argument('--year',type=int,default=2021)
     args=parser.parse_args()
@@ -111,4 +111,3 @@ def main():
         'summary':summary})
     print('Independent multimodal checkpoint reload verified.')
 if __name__=='__main__': main()
-

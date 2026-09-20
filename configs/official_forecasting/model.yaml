@@ -1,0 +1,47 @@
+# Official ModernTCN long-term forecasting architecture reference.
+# Source: https://github.com/luodhhh/ModernTCN/blob/main/ModernTCN-Long-term-forecasting/run.py
+# Values follow official argparse architecture defaults, NOT a tuned stock model.
+# NOT compatible with this project's QuantModelConfig / scripts.run --quant.
+# Official run.py uses CLI arguments, not YAML: an adapter is required.
+model:
+  # Original multivariate forecasting: [B,96,7] -> [B,96,7].
+  seq_len: 96
+  pred_len: 96
+  enc_in: 7
+  freq: h
+
+  # Variable-independent patch embedding, followed by staged downsampling.
+  patch_size: 16
+  patch_stride: 8
+  stem_ratio: 6           # Exposed upstream; not active in the inspected stem.
+  downsample_ratio: 2
+
+  # Four stages, each retaining the original variable and embedding axes.
+  num_blocks: [1, 1, 1, 1]
+  dims: [256, 256, 256, 256]
+  dw_dims: [256, 256, 256, 256]  # Exposed upstream; Block uses dims for width.
+  large_size: [31, 29, 27, 13]
+  small_size: [5, 5, 5, 5]
+  ffn_ratio: 2
+  dropout: 0.05
+
+  # Train large/small Conv+BatchNorm branches separately.
+  # Setting true does NOT fuse a trained checkpoint automatically.
+  small_kernel_merged: false
+  call_structural_reparam: false  # Execution flag, not a Model-constructor field.
+
+  # Multi-stage feature alignment and fusion before the forecasting head.
+  use_multi_scale: true
+
+  # Reversible instance normalization and forecast de-normalization.
+  revin: 1
+  affine: 0
+  subtract_last: 0
+
+  # Optional upstream trend/residual decomposition (off by default).
+  decomposition: 0
+  kernel_size: 25         # Moving-average kernel, NOT the temporal large kernel.
+
+  # Flatten head per variable; shared weights across variables by default.
+  individual: 0
+  head_dropout: 0.0

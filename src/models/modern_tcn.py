@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import math
 import torch
 from torch import nn
+from src.models.cpu_conv import ShortSequenceConv1d
 
 
 @dataclass(frozen=True)
@@ -55,16 +56,16 @@ class ModernTCNBlock(nn.Module):
             raise ValueError('positive dimensions and odd kernel required')
         self.groups, self.features = groups, features
         width = groups * features
-        self.temporal = nn.Conv1d(width, width, kernel_size, padding=kernel_size//2, groups=width)
+        self.temporal = ShortSequenceConv1d(width, width, kernel_size, padding=kernel_size//2, groups=width)
         self.norm = nn.LayerNorm(features)
         self.feature_ffn = nn.Sequential(
-            nn.Conv1d(width, width*ffn_ratio, 1, groups=groups),
+            ShortSequenceConv1d(width, width*ffn_ratio, 1, groups=groups),
             nn.GELU(), nn.Dropout(dropout),
-            nn.Conv1d(width*ffn_ratio, width, 1, groups=groups), nn.Dropout(dropout))
+            ShortSequenceConv1d(width*ffn_ratio, width, 1, groups=groups), nn.Dropout(dropout))
         self.variable_ffn = nn.Sequential(
-            nn.Conv1d(width, width*ffn_ratio, 1, groups=features),
+            ShortSequenceConv1d(width, width*ffn_ratio, 1, groups=features),
             nn.GELU(), nn.Dropout(dropout),
-            nn.Conv1d(width*ffn_ratio, width, 1, groups=features), nn.Dropout(dropout))
+            ShortSequenceConv1d(width*ffn_ratio, width, 1, groups=features), nn.Dropout(dropout))
 
     def forward(self, value):
         if value.ndim != 4 or tuple(value.shape[1:3]) != (self.groups, self.features):

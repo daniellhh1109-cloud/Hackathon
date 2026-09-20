@@ -54,13 +54,23 @@ def main():
     parser.add_argument('--output-dir', required=True, help='New directory; existing runs are never overwritten')
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument('--smoke', action='store_true', help='Artificial data and a tiny linear model only')
+    source.add_argument('--quant', action='store_true', help='B dataset + C ModernTCN, full train/validation')
+    parser.add_argument('--dataset-config', default='configs/datasets.yaml')
+    parser.add_argument('--model-config', default='configs/model.yaml')
     source.add_argument('--factory', help='Python module:function returning the B/C component dictionary')
     parser.add_argument('--year', type=int, default=2021)
+    parser.add_argument('--cpu-threads', type=int, default=2, help='CPU thread count for reproducible short-window execution')
     args = parser.parse_args()
+    if args.cpu_threads < 1:
+        parser.error('--cpu-threads must be positive')
+    torch.set_num_threads(args.cpu_threads)
     if args.smoke and args.year != 2021:
         parser.error('synthetic acceptance uses the 2021 split only')
     if args.smoke:
         components = smoke_components()
+    elif args.quant:
+        from src.training.week2_components import build_components
+        components = build_components(args.dataset_config, args.model_config, args.year)
     else:
         module, name = args.factory.split(':', 1)
         components = getattr(importlib.import_module(module), name)()

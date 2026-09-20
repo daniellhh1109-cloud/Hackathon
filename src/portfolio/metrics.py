@@ -1,3 +1,4 @@
+"""Week 1 arithmetic helpers; not a full backtest engine."""
 import math
 from statistics import mean, stdev
 from src.portfolio.risk import finite

@@ -1,4 +1,4 @@
-source_path: /Users/daniel/Downloads/8k_20150101_20260831_identified.parquet
+source_path: data/raw/8k_20150101_20260831_identified.parquet
 cache_dir: data/embeddings/filing_minilm_v1
 model_cache_dir: data/embeddings/model_downloads/hub
 encoder:

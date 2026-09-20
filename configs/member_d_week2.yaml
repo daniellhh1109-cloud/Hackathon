@@ -1,0 +1,7 @@
+# Fixed BEFORE inspecting 2021 test results. Same sample and rank cache for all models.
+year: 2021
+dataset_config: configs/datasets.yaml
+trainer_config: configs/trainer.yaml
+checkpoint: outputs/member_d_week2/quant_training/best.pt
+output_dir: outputs/member_d_week2
+ridge_alphas: [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0]

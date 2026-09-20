@@ -1,3 +1,4 @@
+"""Member E: hand calculations and deliberately invalid holdings."""
 import csv
 import json
 from pathlib import Path
