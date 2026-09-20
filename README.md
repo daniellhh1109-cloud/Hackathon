@@ -1,6 +1,6 @@
 # McGill-FIAM 2026 Hackathon
 
-按功能组织的数值/多模态训练、月度推理、组合优化和回测项目。统一入口是 `MAIN.py`，源码在 `src/`，命令在 `scripts/`，配置在 `configs/`，测试在 `tests/`。
+按功能组织的数值/多模态训练、月度推理、组合优化和回测项目。最终提交的主流程文件是 `MAIN.py`（直接展示六阶段流程与逐年训练/推理循环），源码在 `src/`，命令在 `scripts/`，配置在 `configs/`，测试在 `tests/`。
 
 ## 安装与检查
 
@@ -49,3 +49,14 @@ GPU 在 setup 时选择 `--device cuda`。多模态训练要求完整文本缓�
 持仓CSV的 `WEIGHT` 为NAV百分数（1代表1%），内部优化权重为小数（0.01代表1%）。真实回测遇到持仓收益缺失会停止。合成演示和单轮训练不代表正式完整策略成绩；全量文本缓存、正式全期回测、Deck与CV仍需完成。
 
 [架构与接口](docs/architecture.md) · [目录清理说明](docs/code_layout.md) · [官方规则](competition_rules.md) · [提交清单](submission_checklist.md)
+
+## 完整流程入口
+
+`MAIN.py` 直接定义：输入审计 → 数值预处理 → 公告编码（多模态）→ 年度训练/验证/预测 → 月度组合与回测 → 报告输出。完整运行：
+
+```bash
+python MAIN.py all --kind quant --output-dir outputs/quant_final
+python MAIN.py all --kind multimodal --allow-download --output-dir outputs/mm_final
+```
+
+先完成上面的安装和 setup，并准备回测需要的 `TB3MS.csv`、`SP500.csv`。完整流程默认覆盖2021年1月至2026年8月。`MAIN.py` 复用 `src/` 算法与 `configs/` 配置，不能只复制该文件到空目录执行；最终单文件提交的依赖分发方式仍需按组委会要求核验。
