@@ -17,7 +17,7 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     project_stages = {'setup','doctor','audit','prepare','embed','train','predict','backtest','report','all'}
     if argv and argv[0] == 'demo':
-        from scripts.week4_demo import main as demo_main
+        from scripts.demo_pipeline import main as demo_main
         return demo_main(argv[1:])
     if argv and argv[0] in project_stages:
         from scripts.project import main as project_main

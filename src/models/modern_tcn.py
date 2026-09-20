@@ -3,7 +3,7 @@
 Reference: luodhhh/ModernTCN, ModernTCN-Long-term-forecasting/models/ModernTCN.py
 Block's time -> feature -> variable mixing. Unlike the official patch stem,
 our required Linear(147,128) is reshaped into 16 learned groups x 8 features.
-Groups are latent, NOT original financial variables. See docs/week2/member_c.md.
+Groups are latent, NOT original financial variables. See docs/architecture.md.
 """
 from dataclasses import dataclass
 import math

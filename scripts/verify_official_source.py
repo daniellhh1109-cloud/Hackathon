@@ -14,7 +14,7 @@ from sklearn.linear_model import LinearRegression,Lasso,Ridge,ElasticNet
 from sklearn.metrics import mean_squared_error
 from src.data.build_samples import build_baseline_panel
 from src.models.official_linear_baseline import dense_monthly_transform,fit_official_year
-from scripts.run_member_d import sha256,write_json
+from scripts.run_ridge_baseline import sha256,write_json
 
 
 class AppendCompatibility(ast.NodeTransformer):
@@ -37,7 +37,7 @@ def execute_nodes(nodes, environment):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source',default='/Users/daniel/Downloads/penalized_linear_hackathon.py')
-    parser.add_argument('--output',default='outputs/member_d_official/source_equivalence.json')
+    parser.add_argument('--output',default='outputs/linear_smoke/source_equivalence.json')
     args=parser.parse_args()
     tree=ast.parse(Path(args.source).read_text())
     body=next(n.body for n in tree.body if isinstance(n,ast.If))

@@ -1,4 +1,4 @@
-"""Member B: point-in-time portfolio inputs; never loads return columns."""
+"""data: point-in-time portfolio inputs; never loads return columns."""
 from pathlib import Path
 import numpy as np
 import pandas as pd

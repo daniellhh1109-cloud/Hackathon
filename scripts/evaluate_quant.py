@@ -158,7 +158,7 @@ def write_plots(root,results):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config',default='configs/member_d_week2.yaml')
+    parser.add_argument('--config',default='configs/quant_evaluation.yaml')
     parser.add_argument('--stage',choices=['baseline','evaluate','all'],default='all')
     args=parser.parse_args()
     config=yaml.safe_load(Path(args.config).read_text())

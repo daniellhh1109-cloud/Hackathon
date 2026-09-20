@@ -1,4 +1,4 @@
-"""One-month linear-baseline samples using member C's calendar interfaces.
+"""One-month linear-baseline samples using model calendar interfaces.
 
 A linear baseline takes the latest feature row; a 12-month sequence is a separate
 architecture choice and must use C.validate_quant_window when implemented.

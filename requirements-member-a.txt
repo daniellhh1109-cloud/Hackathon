@@ -1,5 +1,0 @@
-# Install in the project virtual environment for week 2 training.
-torch>=2.6,<3
-PyYAML>=6
-numpy>=1.26
-pytest>=8

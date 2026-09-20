@@ -1,30 +1,25 @@
-# Guide architecture and implementation status
+# 架构与接口
 
-The project now follows Section 12 of the technical guide in directory structure. **This is scaffolding, not implementation of ModernTCN/MiniLM/Agent.**
+`MAIN.py` 调度环境检查、缓存准备、年度训练、逐月推理、组合决策和事后评价。`scripts/project.py` 管理统一配置；底层组件可单独测试。
 
-## Clean start
-Old research implementation and its tests were removed at the user's request. MAIN.py is a nonfunctional entry point that exits explicitly. No legacy research results establish correctness of this scaffold.
+## 模块
 
-## Planned modules
-The docstring in each new `src/` module describes its responsibility. No placeholder returns fake predictions or weights. `tests/test_alignment.py`, `test_no_leakage.py`, `test_constraints.py`, `test_model_shapes.py` are marked planned and contain no test claims.
+- `src/data/`：147因子白名单、横截面预处理、12个月连续窗口、目标月份切分、公告缓存和多模态数据集。
+- `src/models/`：共享ModernTCN短序列适配、冻结MiniLM缓存的月内/跨月attention、门控融合，以及线性基线。
+- `src/training/quant_components.py`：连接数据集、数值模型和训练器；`multimodal_components.py` 提供多模态组件。
+- `src/training/`：按年度验证集选择checkpoint和计算预测指标，不使用测试标签选择模型。
+- `src/inference/`：独立月度预测与文件来源校验。
+- `src/agent/`：受限控制器和工具；默认mock，真实LLM需要独立配置和验收。
+- `src/portfolio/`：时点上下文、确定性优化器、约束检查、先锁定持仓再读取收益、费用/漂移核算和草稿报告。
 
-`configs/base.yaml` preserves guide defaults, with a project-relative factor-list path. It is NOT yet consumed by MAIN.py. Dependencies for PyTorch, MiniLM and CVXPY will be selected when those modules are implemented.
+## 不变的契约
 
-## Module map
-- `src/data/`: quant preprocessing, filing cache, sample windows, annual splits.
-- `src/models/`: ModernTCN, filing/time attention, gated fusion.
-- `src/training/`: annual fitting, validation, prediction metrics.
-- `src/inference/`: monthly predictions.
-- `src/portfolio/`: optimizer, risk checks, holdings-first backtest.
-- `src/agent/`: tools, prompts, bounded controller.
-- `src/utils/`: common I/O and calendar helpers.
-- `data/` and `outputs/`: local-only content, versioned empty-directory placeholders.
+目标月份恰好晚于特征月份一个日历月；`ret_exc_lead1m` 不再shift。数值窗口包含同一证券连续12个月、147因子；文本窗口只包含决策时已可得的历史公告。训练/验证边界按目标月份计算。测试股票池不按未来标签是否缺失筛选。
 
-## Non-negotiable interfaces
-Target month is feature month plus exactly one calendar month. Never shift ret_exc_lead1m again. Use the official 147-factor whitelist. Quant windows contain 12 continuous calendar months of one security; text covers six eligible historical months with masks. Lock holdings before reading their realized returns. Candidate count is not nonzero holdings count. All-empty text requires explicit handling.
+优化器决定数值权重，控制器不能直接提供最终权重或放宽约束。组合提交后才可评价该月收益。内部权重是NAV小数，官方CSV权重是NAV百分数。持仓收益缺失时停止，不能填零或回头换股。
 
-## Team ownership
-A: integration and rules. B: data audit/schema. C: timing and leakage tests. D: baseline review, then numerical model. E: portfolio checks/backtest. Coordinate text and Agent ownership before Weeks 3-4.
+## 配置与验证范围
 
-## Next steps
-First complete Week 1 checks; then implement and test modules incrementally. Implement the root entry point only after the modules have validated behavior.
+`configs/base.yaml` 是guide设计参考；实际命令读取各自配置或由setup生成的 `configs/local/project.yaml`。`configs/official_forecasting/model.yaml` 仅是上游长序列架构参考，不是当前股票模型的可运行参数。
+
+测试覆盖时间对齐、泄漏反例、模型形状/梯度、训练/checkpoint、推理、缓存、优化和回测。测试通过不代表完整真实数据研究已完成。最新已完成375项测试、合成端到端流程与真实单轮数值训练/推理；完整真实回测、WSL/CUDA和真实LLM尚需进一步验收。

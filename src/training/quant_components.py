@@ -1,4 +1,4 @@
-"""Assemble B's full-universe datasets and C's shared model for A's fit API."""
+"""Assemble full-universe datasets and the shared quant model for the training API."""
 from functools import partial
 from pathlib import Path
 import yaml

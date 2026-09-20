@@ -1,4 +1,4 @@
-"""Member C: convex long/short optimizer with explicit active-position floor."""
+"""model: convex long/short optimizer with explicit active-position floor."""
 import math
 import numpy as np
 from src.portfolio.risk import ConstraintLimits, check_constraints, finite

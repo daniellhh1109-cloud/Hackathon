@@ -1,4 +1,4 @@
-"""B/C/D integration: monthly decisions commit before realized outcome access."""
+"""Pipeline integration: monthly decisions commit before realized outcome access."""
 from dataclasses import asdict
 import json
 from pathlib import Path

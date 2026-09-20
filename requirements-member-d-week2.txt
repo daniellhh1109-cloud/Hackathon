@@ -1,4 +1,0 @@
--r requirements-member-b.txt
--r requirements-member-d.txt
-matplotlib>=3.8
-threadpoolctl>=3

@@ -1,4 +1,4 @@
-"""Member A's cached-embedding training contract; no encoder/model implementation.
+"""training cached-embedding training contract; no encoder/model implementation.
 
 E supplies deterministic items with filings[6,K,384], filing_mask[6,K]
 and raw filing_counts[6]. Months are oldest to newest. Padding may vary per item.

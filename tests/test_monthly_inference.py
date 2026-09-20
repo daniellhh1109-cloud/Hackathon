@@ -1,4 +1,4 @@
-"""Member E: label-free operation, provenance, exact universe and serialization."""
+"""portfolio: label-free operation, provenance, exact universe and serialization."""
 import json
 from pathlib import Path
 import numpy as np

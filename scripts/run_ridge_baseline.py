@@ -1,4 +1,4 @@
-"""Reproduce the small member D baseline. Run from repository root as a module."""
+"""Reproduce the small baseline baseline. Run from repository root as a module."""
 import argparse
 from dataclasses import asdict
 import hashlib
@@ -33,7 +33,7 @@ def write_json(path, value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', default='configs/member_d_smoke.json')
+    parser.add_argument('--config', default='configs/ridge_smoke.json')
     args = parser.parse_args()
     config = json.loads(Path(args.config).read_text())
     if config['preprocessing'] != 'full_same_month_median_then_average_rank_minus1_plus1' or config['model'] != 'Ridge_train_only_svd_with_intercept':
@@ -104,7 +104,7 @@ def main():
     source_paths = [Path(args.config), Path(__file__), *[Path(p) for p in [
         'src/data/prepare_quant.py', 'src/data/build_samples.py', 'src/data/splits.py',
         'src/utils/dates.py', 'src/models/linear_baseline.py', 'src/training/metrics.py']]]
-    manifest = {'command': shlex.join([sys.executable, '-m', 'scripts.run_member_d', '--config', args.config]),
+    manifest = {'command': shlex.join([sys.executable, '-m', 'scripts.run_ridge_baseline', '--config', args.config]),
                 'cwd': str(Path.cwd()), 'python': platform.python_version(),
                 'packages': {m.__name__: m.__version__ for m in [np, pd, pyarrow, sklearn]},
                 'input_sha256': {config[k]: sha256(config[k]) for k in ['chars', 'factor_list', 'verified_factors']},

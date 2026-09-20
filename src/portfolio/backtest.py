@@ -1,4 +1,4 @@
-"""Member D: evaluate committed weights, calculate prior drift and summarize risk."""
+"""baseline: evaluate committed weights, calculate prior drift and summarize risk."""
 import json
 from pathlib import Path
 import numpy as np

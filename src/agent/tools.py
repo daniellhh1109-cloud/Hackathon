@@ -1,8 +1,8 @@
-"""Point-in-time tool boundary and optimizer adapter for member A.
+"""Point-in-time tool boundary and optimizer adapter for portfolio decisions.
 
 Adapters are trusted local code, not LLM-authored programs. No raw data files or
 realized-return tables are passed through this API. Frozen policy is not editable
-by a controller. Input provenance still requires member B's source audit.
+by a controller. Input provenance still requires data source audit.
 """
 from copy import deepcopy
 from dataclasses import asdict, dataclass
@@ -84,7 +84,7 @@ class Optimizer(Protocol):
     """C supplies an implementation. Previous weights include ALL exiting names.
 
     Return {status: 'optimal'|'failed', weights: [{permno, weight}],
-            failure_reason?: str}. A independently validates the weights.
+            failure_reason?: str}. The tool boundary independently validates the weights.
     """
     def __call__(self, *, candidates: list, previous_weights: list, policy: dict) -> dict: ...
 

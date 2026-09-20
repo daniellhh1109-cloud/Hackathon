@@ -1,4 +1,4 @@
-"""Member C model contracts, gradients and independent axis mixing checks."""
+"""model model contracts, gradients and independent axis mixing checks."""
 from dataclasses import replace
 import pytest
 import torch

@@ -9,7 +9,7 @@ from src.portfolio.metrics import monthly_total_return, performance
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    out = root/'outputs/member_e'
+    out = root/'outputs/portfolio_verification'
     out.mkdir(parents=True, exist_ok=True)
     cases = [
         ('balanced', [.02]*50+[-.02]*50, [1]*100),
@@ -34,7 +34,7 @@ def main():
               'first_month_loss':performance([-.1,0],[0,0],[0,0]),
               'source_sha256':{}}
     for name in ['src/portfolio/risk.py','src/portfolio/metrics.py','check_constraints.py',
-                 'scripts/verify_member_e.py','tests/test_constraints.py','tests/test_portfolio_metrics.py']:
+                 'scripts/verify_portfolio.py','tests/test_constraints.py','tests/test_portfolio_metrics.py']:
         result['source_sha256'][name] = hashlib.sha256((root/name).read_bytes()).hexdigest()
     (out/'verification.json').write_text(json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
     print(f'Saved {len(cases)} hand cases and metric examples to {out}')

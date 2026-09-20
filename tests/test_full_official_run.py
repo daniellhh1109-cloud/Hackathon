@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts import run_official_member_d as runner
+from scripts import run_official as runner
 from src.models.official_linear_baseline import fit_official_year
 
 
@@ -33,7 +33,7 @@ def test_full_pipeline_all_six_years(tmp_path, monkeypatch):
     pd.DataFrame(rows).to_parquet(chars)
     factor_list = tmp_path/'factors.csv'
     pd.DataFrame({'variable': factors}).to_csv(factor_list, index=False)
-    cfg = json.loads(open('configs/member_d_official_full.json').read())
+    cfg = json.loads(open('configs/official_full.json').read())
     cfg.update(chars=str(chars), factor_list=str(factor_list), output_dir=str(tmp_path/'out'))
     config = tmp_path/'config.json'
     config.write_text(json.dumps(cfg))

@@ -1,4 +1,4 @@
-"""Member E: result plots, submission checks and evidence-based deck source."""
+"""portfolio: result plots, submission checks and evidence-based deck source."""
 import json
 from pathlib import Path
 import pandas as pd

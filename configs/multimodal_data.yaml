@@ -1,4 +1,4 @@
 # 数值数据、公告缓存和模型结构；训练超参数见 multimodal_training.yaml。
-store_dir: data/processed/member_b_quant_v1
+store_dir: data/processed/quant_v1
 cache_dir: data/embeddings/filing_minilm_v1
 model_config: configs/multimodal_model.yaml

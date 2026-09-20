@@ -1,17 +1,12 @@
 {
   "chars": "data/raw/chars_final_with_names.parquet",
   "factor_list": "configs/factor_char_list.csv",
-  "output_dir": "outputs/member_d_official_full",
+  "output_dir": "outputs/linear_smoke",
   "test_years": [
-    2021,
-    2022,
-    2023,
-    2024,
-    2025,
-    2026
+    2021
   ],
-  "require_full_period": true,
-  "universe": "all_available",
+  "n_securities": 128,
+  "selection_month": "2015-01-31",
   "preprocessing": "full_same_month_median_dense_rank_then_train_standard_scaler",
   "models": [
     "ols",
@@ -19,5 +14,6 @@
     "ridge",
     "en"
   ],
-  "alpha_grids": "official_original_full_grids"
+  "alpha_grids": "official_original_full_grids",
+  "status": "official_algorithm_adapted_to_2026_with_label_membership_fix"
 }

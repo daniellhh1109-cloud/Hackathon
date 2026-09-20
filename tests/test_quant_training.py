@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch import nn
 
-from scripts.run_member_a import smoke_components, SmokeRegressor
+from scripts.run import smoke_components, SmokeRegressor
 from src.training.trainer import (TrainingConfig, fit, load_checkpoint, _run_epoch,
                                   annual_bounds, read_config)
 from torch.utils.data import DataLoader
@@ -127,7 +127,7 @@ def test_invalid_config(change):
 
 
 def test_config_and_feature_leakage(tmp_path):
-    assert read_config('configs/member_a_week2.yaml').batch_size == 512
+    assert read_config('configs/trainer.yaml').batch_size == 512
     components = smoke_components()
     components['feature_names'][0] = 'ret_exc_lead1m'
     with pytest.raises(ValueError, match='label/identifier'):

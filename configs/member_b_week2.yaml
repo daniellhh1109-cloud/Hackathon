@@ -1,5 +1,0 @@
-raw_path: data/raw/chars_final_with_names.parquet
-factor_path: configs/factor_char_list.csv
-store_dir: data/processed/member_b_quant_v1
-report_dir: outputs/member_b_week2
-year: 2021

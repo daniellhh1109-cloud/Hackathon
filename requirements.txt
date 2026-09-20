@@ -1,3 +1,3 @@
-# Unified environment for the implemented week-2 pipeline and its full test suite.
-# Member-specific files remain available for smaller development environments.
--r requirements-member-d-week2.txt
+# Full runtime and test environment. For a chosen CUDA wheel, install torch first.
+-r requirements-portable.txt
+torch>=2.6,<3

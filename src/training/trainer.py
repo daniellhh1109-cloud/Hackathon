@@ -1,7 +1,7 @@
-"""Member A: quant-only training, validation selection and portable checkpoints.
+"""Quant-only training, validation selection and portable checkpoints.
 
 Dataset items: quant[12,147], target scalar, target_month/quant_end_month
-(YYYY-MM), permno. Dataset construction and ModernTCN belong to B/C.
+(YYYY-MM), permno. Dataset and model implementations are supplied by the component factory.
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def read_config(path):
     with open(path, encoding='utf-8') as stream:
         raw = yaml.safe_load(stream)
     if not isinstance(raw, dict) or set(raw) != {'training'}:
-        raise ValueError('member A config must have exactly one training section')
+        raise ValueError('training config must have exactly one training section')
     return TrainingConfig(**raw['training'])
 
 

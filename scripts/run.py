@@ -1,4 +1,4 @@
-"""Run member A's synthetic training acceptance, or a B/C integration factory."""
+"""Run quant training with real components or a synthetic acceptance fixture."""
 import argparse
 import importlib
 from pathlib import Path
@@ -57,7 +57,7 @@ def main():
     source.add_argument('--quant', action='store_true', help='B dataset + C ModernTCN, full train/validation')
     parser.add_argument('--dataset-config', default='configs/datasets.yaml')
     parser.add_argument('--model-config', default='configs/model.yaml')
-    source.add_argument('--factory', help='Python module:function returning the B/C component dictionary')
+    source.add_argument('--factory', help='Python module:function returning the data/model component dictionary')
     parser.add_argument('--year', type=int, default=2021)
     parser.add_argument('--cpu-threads', type=int, default=2, help='CPU thread count for reproducible short-window execution')
     args = parser.parse_args()
@@ -69,7 +69,7 @@ def main():
     if args.smoke:
         components = smoke_components()
     elif args.quant:
-        from src.training.week2_components import build_components
+        from src.training.quant_components import build_components
         components = build_components(args.dataset_config, args.model_config, args.year)
     else:
         module, name = args.factory.split(':', 1)

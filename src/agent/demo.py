@@ -17,7 +17,7 @@ def components(month='2021-01-01', initial=True):
 
 
 def equal_weight_fixture(*, candidates, previous_weights, policy):
-    """Deterministic test stub, NOT member C's optimized portfolio."""
+    """Deterministic test stub, NOT model optimized portfolio."""
     counts = {side: sum(r['side'] == side for r in candidates) for side in ('long', 'short')}
     return {'status': 'optimal', 'weights': [{'permno': r['permno'],
         'weight': (1 if r['side'] == 'long' else -1)/counts[r['side']]} for r in candidates]}

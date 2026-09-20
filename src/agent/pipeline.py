@@ -110,7 +110,7 @@ def execute(config, output_dir, *, smoke=False):
         controller = make_controller()
         write_json(directory / 'run_manifest.json', {'synthetic': smoke, 'config': config,
             'controller': controller.metadata, 'months': months,
-            'scope': 'Member A decision orchestration. Optional evaluation is a separate trusted adapter.'})
+            'scope': 'Portfolio decision orchestration. Optional evaluation is a separate trusted adapter.'})
         previous_hash = None
         for index, month in enumerate(months):
             stage = f'decision:{month}'

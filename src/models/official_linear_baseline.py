@@ -2,7 +2,7 @@
 
 Preserves dense ranks, train-only standardization, demeaned train targets,
 no-intercept estimators, and the original four models and alpha grids. Fixes
-label-dependent prediction membership and delegates dates to member C.
+label-dependent prediction membership and delegates dates to model.
 """
 import warnings
 import numpy as np

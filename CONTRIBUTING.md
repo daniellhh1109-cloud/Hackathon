@@ -10,4 +10,4 @@
 
 Do not commit raw competition data, private keys, `.env`, model binaries, cached embeddings, output tables, CVs or original provider documents. `.gitignore` cannot remove secrets from old history. Google Drive is for team documents; GitHub is for code and versioned configuration.
 
-The scaffold's placeholder modules are explicitly unfinished. No model or portfolio tests are implemented yet.
+Run the full test suite after changing module names, imports or configuration paths. Keep runtime files named by function.

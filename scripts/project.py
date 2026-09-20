@@ -100,7 +100,7 @@ def train(config,kind,year):
     torch.set_num_threads(config['cpu_threads'])
     output=Path(config['training_root'])/kind/str(year)
     if kind=='quant':
-        from src.training.week2_components import build_components
+        from src.training.quant_components import build_components
         c=build_components(config['dataset_config'],config['model_config'],year)
         model,summary=fit(**c,config=read_config(config['training_config']),target_year=year,output_dir=output)
         restored=c['model_factory']();load_checkpoint(output/'best.pt',restored,

@@ -1,4 +1,4 @@
-# Member A production interface template. B supplies vetted snapshots; C/D supply adapters.
+# Production interface: vetted data snapshots, optimizer and evaluation adapters.
 # Run from repository root. This fails explicitly until those inputs/adapters exist.
 start_month: '2021-01-01'
 end_month: '2021-01-01'

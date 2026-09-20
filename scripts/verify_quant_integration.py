@@ -6,7 +6,7 @@ from pathlib import Path
 import torch
 from torch import nn
 from torch.utils.data import Subset
-from src.training.week2_components import build_components
+from src.training.quant_components import build_components
 from src.training.trainer import fit, TrainingConfig, seed_everything, load_checkpoint
 from src.models.quant_model import QuantRegressor
 from src.data.quant_dataset import write_json
@@ -14,7 +14,7 @@ from src.data.quant_dataset import write_json
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output-dir',default='outputs/member_c_week2')
+    parser.add_argument('--output-dir',default='outputs/quant_integration')
     parser.add_argument('--dataset-config',default='configs/datasets.yaml')
     parser.add_argument('--model-config',default='configs/model.yaml')
     args=parser.parse_args()

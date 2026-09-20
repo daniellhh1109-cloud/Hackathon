@@ -1,7 +1,7 @@
 {
   "chars": "data/raw/chars_final_with_names.parquet",
   "factor_list": "configs/factor_char_list.csv",
-  "output_dir": "outputs/member_d_smoke",
+  "output_dir": "outputs/ridge_smoke",
   "test_years": [
     2021
   ],

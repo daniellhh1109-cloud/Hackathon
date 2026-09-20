@@ -36,7 +36,7 @@ def test_submission_percentage_units_and_cli(tmp_path):
                           'TICKER':['SYN']*200,'COMPANY NAME':['Synthetic']*200,
                           'WEIGHT':[1.]*100+[-1.]*100})
     path=tmp_path/'holdings.csv';frame.to_csv(path,index=False)
-    run=subprocess.run([sys.executable,'-m','scripts.check_constraints',str(path)],
+    run=subprocess.run([sys.executable,'-m','check_constraints',str(path)],
                        capture_output=True,text=True)
     assert run.returncode == 0, run.stderr
     report=json.loads(run.stdout)
@@ -56,7 +56,7 @@ def test_report_rejects_ambiguous_old_units_without_creating_directory(tmp_path)
 
 def test_workflow_export_units_match_committed_weights(tmp_path,monkeypatch):
     # Run the actual optimizer and accounting on two synthetic months, not mocked outputs.
-    import scripts.week4_demo as demo
+    import scripts.demo_pipeline as demo
     from src.portfolio.workflow import run_backtest
     def short_run(config, output):
         config['end_month']='2021-02-01'

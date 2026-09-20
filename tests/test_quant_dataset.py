@@ -9,7 +9,7 @@ from src.data.quant_dataset import (normalize_panel, window_manifest, prepare_st
 from src.data.prepare_quant import monthly_rank_transform
 from src.data.splits import annual_split, validate_quant_window
 from src.training.trainer import annual_bounds, TrainingConfig, fit
-from scripts.run_member_a import SmokeRegressor
+from scripts.run import SmokeRegressor
 
 FACTORS = [f'factor_{i}' for i in range(147)]
 

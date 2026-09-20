@@ -2,6 +2,6 @@
 year: 2021
 dataset_config: configs/datasets.yaml
 trainer_config: configs/trainer.yaml
-checkpoint: outputs/member_d_week2/quant_training/best.pt
-output_dir: outputs/member_d_week2
+checkpoint: outputs/quant_evaluation/quant_training/best.pt
+output_dir: outputs/quant_evaluation
 ridge_alphas: [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0]
